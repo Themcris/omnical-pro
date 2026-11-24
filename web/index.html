@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="es" data-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#0b1016" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f3f6f8" media="(prefers-color-scheme: light)">
+  <meta name="description" content="OmniCalc Pro: calculadora científica y de ingeniería 100% offline con motor en WebAssembly.">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data: blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>OmniCalc Pro</title>
+  <link rel="icon" type="image/png" href="icon-192.png">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Saltar al contenido</a>
+
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">∑</span><span>OmniCalc <b>Pro</b></span></div>
+    <div class="topbar-actions">
+      <span id="offline-pill" class="pill pill-warn" hidden>Sin conexión</span>
+      <button id="btn-settings" class="icon-btn" type="button" aria-label="Ajustes" title="Ajustes">⚙</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Módulos">
+    <button class="tab" role="tab" id="t-calc" data-tab="calc" aria-controls="tab-calc" aria-selected="true">Básica</button>
+    <button class="tab" role="tab" id="t-graph" data-tab="graph" aria-controls="tab-graph" aria-selected="false" tabindex="-1">Gráficos</button>
+    <button class="tab" role="tab" id="t-matrix" data-tab="matrix" aria-controls="tab-matrix" aria-selected="false" tabindex="-1">Matrices</button>
+    <button class="tab" role="tab" id="t-stats" data-tab="stats" aria-controls="tab-stats" aria-selected="false" tabindex="-1">Estadística</button>
+    <button class="tab" role="tab" id="t-calculus" data-tab="calculus" aria-controls="tab-calculus" aria-selected="false" tabindex="-1">Cálculo</button>
+    <button class="tab" role="tab" id="t-prog" data-tab="prog" aria-controls="tab-prog" aria-selected="false" tabindex="-1">Programador</button>
+    <button class="tab" role="tab" id="t-discrete" data-tab="discrete" aria-controls="tab-discrete" aria-selected="false" tabindex="-1">Discretas</button>
+    <button class="tab" role="tab" id="t-network" data-tab="network" aria-controls="tab-network" aria-selected="false" tabindex="-1">Redes</button>
+    <button class="tab" role="tab" id="t-sets" data-tab="sets" aria-controls="tab-sets" aria-selected="false" tabindex="-1">Conjuntos</button>
+    <button class="tab" role="tab" id="t-poly" data-tab="poly" aria-controls="tab-poly" aria-selected="false" tabindex="-1">Polinomios</button>
+    <button class="tab" role="tab" id="t-ratio" data-tab="ratio" aria-controls="tab-ratio" aria-selected="false" tabindex="-1">Proporción</button>
+  </nav>
+
+  <div id="boot" class="boot" role="status">Cargando motor WebAssembly…</div>
+
+  <main id="main" class="main" hidden>
+
+    <!-- ===================== BÁSICA ===================== -->
+    <section id="tab-calc" class="panel" role="tabpanel" aria-labelledby="t-calc">
+      <div class="calc-layout">
+        <div class="card calc">
+          <div class="lcd">
+            <div class="lcd-top">
+              <span id="mem-ind" class="badge" hidden>M</span>
+              <button id="btn-angle" class="badge badge-btn" type="button" title="Cambiar unidad angular">RAD</button>
+              <span id="history-line" class="lcd-hist"></span>
+            </div>
+            <input id="display" class="lcd-input" type="text" inputmode="none" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="0" aria-label="Expresión">
+            <div id="preview" class="lcd-preview" aria-live="polite"></div>
+            <div id="calc-error" class="lcd-error" role="alert" hidden></div>
+          </div>
+
+          <div class="calc-tools">
+            <button class="chip" type="button" data-act="graph">Graficar</button>
+            <button class="chip" type="button" data-act="copy">Copiar</button>
+            <button class="chip" type="button" id="btn-2nd" aria-pressed="false">2nd</button>
+            <button class="chip chip-hist" type="button" id="btn-hist-toggle" aria-expanded="false" aria-controls="history-card">Historial</button>
+          </div>
+
+          <div class="keys" id="keys">
+            <button class="k k-mem" type="button" data-act="mc">MC</button>
+            <button class="k k-mem" type="button" data-act="mr">MR</button>
+            <button class="k k-mem" type="button" data-act="mplus">M+</button>
+            <button class="k k-mem" type="button" data-act="mminus">M−</button>
+            <button class="k k-ac" type="button" data-act="ac">AC</button>
+
+            <button class="k k-fn" type="button" data-k="sin(" data-alt="sinh(" data-altlabel="sinh">sin</button>
+            <button class="k k-fn" type="button" data-k="cos(" data-alt="cosh(" data-altlabel="cosh">cos</button>
+            <button class="k k-fn" type="button" data-k="tan(" data-alt="tanh(" data-altlabel="tanh">tan</button>
+            <button class="k k-fn" type="button" data-k="(">(</button>
+            <button class="k k-fn" type="button" data-k=")">)</button>
+
+            <button class="k k-fn" type="button" data-k="asin(" data-alt="asinh(" data-altlabel="sinh⁻¹">sin<sup>-1</sup></button>
+            <button class="k k-fn" type="button" data-k="acos(" data-alt="acosh(" data-altlabel="cosh⁻¹">cos<sup>-1</sup></button>
+            <button class="k k-fn" type="button" data-k="atan(" data-alt="atanh(" data-altlabel="tanh⁻¹">tan<sup>-1</sup></button>
+            <button class="k k-fn" type="button" data-k="abs(" data-alt="floor(" data-altlabel="⌊x⌋">|x|</button>
+            <button class="k k-del" type="button" data-act="del" aria-label="Borrar">DEL</button>
+
+            <button class="k k-fn" type="button" data-k="^2" data-alt="^(-1)" data-altlabel="x⁻¹">x²</button>
+            <button class="k k-fn" type="button" data-k="^3" data-alt="root(" data-altlabel="ʸ√x">x³</button>
+            <button class="k k-fn" type="button" data-k="^" data-alt="mod(" data-altlabel="mod">xʸ</button>
+            <button class="k k-fn" type="button" data-k="sqrt(" data-alt="cbrt(" data-altlabel="∛">√</button>
+            <button class="k k-fn" type="button" data-k="exp(" data-alt="10^" data-altlabel="10ˣ">eˣ</button>
+
+            <button class="k k-calc" type="button" data-act="deriv">d/dx</button>
+            <button class="k k-calc" type="button" data-act="integ">∫</button>
+            <button class="k k-fn" type="button" data-k="ans">Ans</button>
+            <button class="k k-fn" type="button" data-k="log(" data-alt="log2(" data-altlabel="log₂">log</button>
+            <button class="k k-fn" type="button" data-k="ln(" data-alt="e" data-altlabel="e">ln</button>
+
+            <button class="k" type="button" data-k="7">7</button>
+            <button class="k" type="button" data-k="8">8</button>
+            <button class="k" type="button" data-k="9">9</button>
+            <button class="k k-var" type="button" data-k="x">x</button>
+            <button class="k k-op" type="button" data-k="÷">÷</button>
+
+            <button class="k" type="button" data-k="4">4</button>
+            <button class="k" type="button" data-k="5">5</button>
+            <button class="k" type="button" data-k="6">6</button>
+            <button class="k k-fn" type="button" data-k="!" data-alt="ncr(" data-altlabel="nCr">x!</button>
+            <button class="k k-op" type="button" data-k="×">×</button>
+
+            <button class="k" type="button" data-k="1">1</button>
+            <button class="k" type="button" data-k="2">2</button>
+            <button class="k" type="button" data-k="3">3</button>
+            <button class="k k-fn" type="button" data-k="π" data-alt="τ" data-altlabel="τ">π</button>
+            <button class="k k-op" type="button" data-k="-">−</button>
+
+            <button class="k" type="button" data-k="0">0</button>
+            <button class="k" type="button" data-k=".">.</button>
+            <button class="k k-fn" type="button" data-k="E" data-alt="," data-altlabel=",">EXP</button>
+            <button class="k k-op" type="button" data-k="+">+</button>
+            <button class="k k-eq" type="button" data-act="eval" aria-label="Calcular">=</button>
+          </div>
+        </div>
+
+        <aside class="card history" id="history-card">
+          <div class="row between"><h3 class="card-title">Historial</h3><button id="btn-clear-history" class="link-btn" type="button">Borrar</button></div>
+          <ul id="history-list" class="history-list"></ul>
+          <p id="history-empty" class="muted small">Aún no hay cálculos. Toca un resultado para reutilizarlo.</p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- ===================== GRÁFICOS ===================== -->
+    <section id="tab-graph" class="panel" role="tabpanel" aria-labelledby="t-graph" hidden>
+      <div class="card">
+        <h2 class="card-title">Graficadora 2D</h2>
+        <div id="fn-list" class="fn-list"></div>
+        <div class="row wrap">
+          <button id="btn-add-fn" class="btn" type="button">+ Función</button>
+          <button id="btn-plot" class="btn btn-primary" type="button">Graficar</button>
+        </div>
+        <div class="toolbar" role="toolbar" aria-label="Controles de la gráfica">
+          <button class="btn btn-sm" type="button" data-gact="zoomin" aria-label="Acercar">＋</button>
+          <button class="btn btn-sm" type="button" data-gact="zoomout" aria-label="Alejar">－</button>
+          <button class="btn btn-sm" type="button" data-gact="reset">Restablecer</button>
+          <button class="btn btn-sm" type="button" data-gact="roots" aria-pressed="false">Raíces</button>
+          <button class="btn btn-sm" type="button" data-gact="png">PNG</button>
+        </div>
+        <div class="canvas-wrap">
+          <canvas id="plot" aria-label="Gráfica de funciones" role="img"></canvas>
+          <div id="plot-tip" class="plot-tip" hidden></div>
+        </div>
+        <p id="graph-msg" class="msg" role="status"></p>
+        <p class="muted small">Arrastra para mover · rueda del ratón o pellizco para ampliar · toca/pasa el cursor para ver los valores.</p>
+      </div>
+    </section>
+
+    <!-- ===================== MATRICES ===================== -->
+    <section id="tab-matrix" class="panel" role="tabpanel" aria-labelledby="t-matrix" hidden>
+      <div class="card">
+        <h2 class="card-title">Álgebra lineal</h2>
+        <div class="row wrap between">
+          <label class="field field-inline">Tamaño
+            <select id="mx-size"><option value="2">2 × 2</option><option value="3" selected>3 × 3</option><option value="4">4 × 4</option><option value="5">5 × 5</option></select>
+          </label>
+          <label class="field field-inline">k / n
+            <input id="mx-k" class="input input-sm" type="text" inputmode="decimal" value="2" autocomplete="off" aria-describedby="mx-k-help">
+          </label>
+        </div>
+        <p id="mx-k-help" class="muted small">k es el escalar de k·A y n el exponente entero de Aⁿ (admite negativos). Las celdas aceptan expresiones: 1/3, pi, sqrt(2)…</p>
+
+        <div class="matrix-pair">
+          <div class="mx">
+            <div class="mx-head"><h3>Matriz A</h3><span class="mx-tools"><button class="link-btn" type="button" data-mx="A:id">Identidad</button><button class="link-btn" type="button" data-mx="A:zero">Ceros</button><button class="link-btn" type="button" data-mx="A:rand">Aleatoria</button></span></div>
+            <div id="grid-a" class="mx-grid"></div>
+          </div>
+          <div class="mx">
+            <div class="mx-head"><h3>Matriz B</h3><span class="mx-tools"><button class="link-btn" type="button" data-mx="B:id">Identidad</button><button class="link-btn" type="button" data-mx="B:zero">Ceros</button><button class="link-btn" type="button" data-mx="B:rand">Aleatoria</button></span></div>
+            <div id="grid-b" class="mx-grid"></div>
+          </div>
+        </div>
+
+        <div class="keys keys-4" id="mx-ops">
+          <button class="k k-fn" type="button" data-op="1">A + B</button>
+          <button class="k k-fn" type="button" data-op="2">A − B</button>
+          <button class="k k-fn" type="button" data-op="3">A × B</button>
+          <button class="k k-fn" type="button" data-op="11">k · A</button>
+          <button class="k k-fn" type="button" data-op="4">Aᵀ</button>
+          <button class="k k-fn" type="button" data-op="5">A⁻¹</button>
+          <button class="k k-fn" type="button" data-op="9">Aⁿ</button>
+          <button class="k k-fn" type="button" data-op="10" title="Resuelve A·x = b con b = 1ª columna de B">A·x = b</button>
+          <button class="k k-eq" type="button" data-op="6">det(A)</button>
+          <button class="k k-eq" type="button" data-op="7">Rango</button>
+          <button class="k k-eq" type="button" data-op="8">Traza</button>
+          <button class="k k-ac" type="button" id="mx-clear">Limpiar</button>
+        </div>
+        <p id="mx-msg" class="msg" role="alert"></p>
+
+        <div class="mx mx-result">
+          <div class="mx-head"><h3>Resultado</h3><button class="link-btn" type="button" id="mx-to-a" hidden>Usar como A</button></div>
+          <div id="grid-r" class="mx-grid mx-readonly"></div>
+          <div id="mx-scalar" class="big-result" aria-live="polite"></div>
+        </div>
+        <div id="steps-matrix" class="steps" hidden></div>
+      </div>
+    </section>
+
+    <!-- ===================== ESTADÍSTICA ===================== -->
+    <section id="tab-stats" class="panel" role="tabpanel" aria-labelledby="t-stats" hidden>
+      <div class="card">
+        <h2 class="card-title">Estadística descriptiva y regresión</h2>
+        <label class="field">Datos X <span class="muted small">(separados por coma, espacio, punto y coma o salto de línea)</span>
+          <textarea id="st-x" class="input" rows="3" spellcheck="false" autocomplete="off">4, 8, 15, 16, 23, 42</textarea>
+        </label>
+        <label class="field">Datos Y <span class="muted small">(opcional: activa la regresión lineal y = a + b·x)</span>
+          <textarea id="st-y" class="input" rows="2" spellcheck="false" autocomplete="off" placeholder="Misma cantidad de valores que X"></textarea>
+        </label>
+        <div class="row wrap">
+          <button id="st-calc" class="btn btn-primary" type="button">Calcular</button>
+          <button id="st-clear" class="btn btn-danger" type="button">Limpiar</button>
+          <button id="st-copy" class="btn" type="button">Copiar resultados</button>
+        </div>
+        <p id="st-msg" class="msg" role="alert"></p>
+        <div id="st-results" class="stat-grid" aria-live="polite"></div>
+        <canvas id="st-hist" class="hist" aria-label="Histograma" role="img" hidden></canvas>
+        <div id="st-reg" class="result-box" hidden></div>
+        <div id="steps-stats" class="steps" hidden></div>
+      </div>
+    </section>
+
+    <!-- ===================== CÁLCULO ===================== -->
+    <section id="tab-calculus" class="panel" role="tabpanel" aria-labelledby="t-calculus" hidden>
+      <div class="card">
+        <h2 class="card-title">Cálculo numérico</h2>
+        <label class="field">Función f(x)
+          <input id="cx-expr" class="input mono" type="text" value="x^2" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Ej: x^3 + sin(x)">
+        </label>
+        <div class="grid-2">
+          <label class="field">Límite a <input id="cx-a" class="input mono" type="text" value="0" autocomplete="off" inputmode="decimal" placeholder="0, pi, -inf"></label>
+          <label class="field">Límite b <input id="cx-b" class="input mono" type="text" value="2" autocomplete="off" inputmode="decimal" placeholder="2, pi/2, inf"></label>
+        </div>
+        <label class="field">Punto x <input id="cx-x" class="input mono" type="text" value="1" autocomplete="off" inputmode="decimal"></label>
+        <div class="grid-2">
+          <button class="btn btn-primary" type="button" data-cx="integral">∫ Integral definida</button>
+          <button class="btn btn-primary" type="button" data-cx="deriv">d/dx en x</button>
+          <button class="btn" type="button" data-cx="deriv2">d²/dx² en x</button>
+          <button class="btn" type="button" data-cx="roots">Raíces f(x)=0 en [a, b]</button>
+        </div>
+        <p class="muted small">Los límites aceptan expresiones (<code>pi/2</code>, <code>2*pi</code>) e infinitos (<code>inf</code>, <code>-inf</code>).</p>
+        <p id="cx-msg" class="msg" role="alert"></p>
+        <div class="result-box center">
+          <div class="muted small" id="cx-label">Resultado</div>
+          <div id="cx-result" class="big-result" aria-live="polite">—</div>
+          <div id="cx-detail" class="muted small"></div>
+        </div>
+        <div id="steps-calculus" class="steps" hidden></div>
+        <div class="row"><button id="cx-graph" class="btn" type="button">Ver f(x) en la gráfica</button><button id="cx-clear" class="btn btn-danger" type="button">Limpiar</button></div>
+      </div>
+    </section>
+
+    <!-- ===================== PROGRAMADOR ===================== -->
+    <section id="tab-prog" class="panel" role="tabpanel" aria-labelledby="t-prog" hidden>
+      <div class="card">
+        <h2 class="card-title">Módulo programador</h2>
+        <div class="grid-2">
+          <label class="field">Tamaño de palabra
+            <select id="pg-word"><option value="8">8 bits</option><option value="16">16 bits</option><option value="32">32 bits</option><option value="64" selected>64 bits</option></select>
+          </label>
+          <label class="field">Base de entrada
+            <select id="pg-base"><option value="10" selected>Decimal (10)</option><option value="16">Hexadecimal (16)</option><option value="2">Binario (2)</option><option value="8">Octal (8)</option></select>
+          </label>
+        </div>
+        <div class="grid-2">
+          <label class="field">Número A <input id="pg-a" class="input mono" type="text" value="5" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text"></label>
+          <label class="field">Número B <input id="pg-b" class="input mono" type="text" value="3" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text"></label>
+        </div>
+        <p class="muted small">Acepta prefijos <code>0x</code>, <code>0b</code>, <code>0o</code>, negativos (complemento a 2) y <code>_</code> como separador.</p>
+        <div class="keys keys-4" id="pg-ops">
+          <button class="k k-fn" type="button" data-op="1">AND</button>
+          <button class="k k-fn" type="button" data-op="2">OR</button>
+          <button class="k k-fn" type="button" data-op="3">XOR</button>
+          <button class="k k-fn" type="button" data-op="6">NOT A</button>
+          <button class="k k-fn" type="button" data-op="7">NAND</button>
+          <button class="k k-fn" type="button" data-op="8">NOR</button>
+          <button class="k k-fn" type="button" data-op="17">NEG A</button>
+          <button class="k k-fn" type="button" data-op="14">A ÷ B</button>
+          <button class="k k-fn" type="button" data-op="4">A &lt;&lt; B</button>
+          <button class="k k-fn" type="button" data-op="5">A &gt;&gt; B</button>
+          <button class="k k-fn" type="button" data-op="16">A &gt;&gt;&gt; B</button>
+          <button class="k k-fn" type="button" data-op="15">A mod B</button>
+          <button class="k k-fn" type="button" data-op="9">ROL</button>
+          <button class="k k-fn" type="button" data-op="10">ROR</button>
+          <button class="k k-fn" type="button" data-op="11">A + B</button>
+          <button class="k k-fn" type="button" data-op="12">A − B</button>
+          <button class="k k-fn" type="button" data-op="13">A × B</button>
+          <button class="k k-ac" type="button" id="pg-clear">Limpiar</button>
+        </div>
+        <p id="pg-msg" class="msg" role="alert"></p>
+        <div class="result-box" id="pg-result" aria-live="polite">
+          <dl class="kv mono">
+            <div><dt>BIN</dt><dd id="pg-bin" class="wrap-any">—</dd></div>
+            <div><dt>OCT</dt><dd id="pg-oct">—</dd></div>
+            <div><dt>DEC</dt><dd id="pg-dec">—</dd></div>
+            <div><dt>DEC (con signo)</dt><dd id="pg-sdec">—</dd></div>
+            <div><dt>HEX</dt><dd id="pg-hex">—</dd></div>
+          </dl>
+          <div class="flags" aria-label="Banderas del procesador">
+            <span class="flag" id="fl-cf" title="Carry / acarreo">CF</span><span class="flag" id="fl-of" title="Overflow con signo">OF</span>
+            <span class="flag" id="fl-zf" title="Cero">ZF</span><span class="flag" id="fl-sf" title="Signo (bit más alto)">SF</span>
+            <span class="muted small" id="pg-stats"></span>
+          </div>
+        </div>
+        <details class="box" open>
+          <summary>Editor de bits (A)</summary>
+          <p class="muted small">Toca un bit para invertirlo; el valor de A se actualiza.</p>
+          <div id="bit-grid" class="bit-grid" role="group" aria-label="Bits de A"></div>
+        </details>
+        <details class="box">
+          <summary>Representación IEEE-754</summary>
+          <div class="row wrap">
+            <label class="field grow">Número real <input id="ie-v" class="input mono" type="text" value="0.1" autocomplete="off" inputmode="decimal"></label>
+            <label class="field field-inline"><select id="ie-t"><option value="64">double (64)</option><option value="32">float (32)</option></select></label>
+          </div>
+          <div id="ie-out" class="ieee" aria-live="polite"></div>
+        </details>
+        <div id="steps-prog" class="steps" hidden></div>
+      </div>
+    </section>
+
+    <!-- ===================== DISCRETAS ===================== -->
+    <section id="tab-discrete" class="panel" role="tabpanel" aria-labelledby="t-discrete" hidden>
+      <div class="card">
+        <h2 class="card-title">Matemáticas discretas</h2>
+        <div class="segmented" role="tablist" aria-label="Sección">
+          <button type="button" class="seg active" data-dsec="comb" role="tab" aria-selected="true">Combinatoria</button>
+          <button type="button" class="seg" data-dsec="num" role="tab" aria-selected="false">Teoría de números</button>
+          <button type="button" class="seg" data-dsec="logic" role="tab" aria-selected="false">Lógica</button>
+        </div>
+
+        <div id="dsec-comb" class="dsec">
+          <div class="grid-2">
+            <label class="field">n (total) <input id="ds-n" class="input mono" type="text" inputmode="numeric" value="5" autocomplete="off"></label>
+            <label class="field">r (elegir) <input id="ds-r" class="input mono" type="text" inputmode="numeric" value="2" autocomplete="off"></label>
+          </div>
+          <div class="keys keys-4" id="ds-ops">
+            <button class="k k-fn" type="button" data-op="1">nPr</button>
+            <button class="k k-fn" type="button" data-op="2">nCr</button>
+            <button class="k k-eq" type="button" data-op="3">n!</button>
+            <button class="k k-fn" type="button" data-op="4">Fib(n)</button>
+            <button class="k k-fn" type="button" data-op="5" title="Permutaciones con repetición">nʳ</button>
+            <button class="k k-fn" type="button" data-op="6" title="Combinaciones con repetición">C(n+r−1, r)</button>
+            <button class="k k-fn" type="button" data-op="7">Catalan(n)</button>
+            <button class="k k-ac" type="button" id="ds-clear">Limpiar</button>
+          </div>
+          <p id="ds-msg" class="msg" role="alert"></p>
+          <div class="result-box center">
+            <div class="muted small" id="ds-label">Resultado</div>
+            <div id="ds-result" class="big-result big-wrap" aria-live="polite">—</div>
+            <div id="ds-detail" class="muted small"></div>
+            <button class="link-btn" type="button" id="ds-copy" hidden>Copiar número completo</button>
+          </div>
+          <div id="steps-discrete" class="steps" hidden></div>
+        </div>
+
+        <div id="dsec-num" class="dsec" hidden>
+          <div class="grid-2">
+            <label class="field">a <input id="nt-a" class="input mono" type="text" inputmode="numeric" value="360" autocomplete="off"></label>
+            <label class="field">b <input id="nt-b" class="input mono" type="text" inputmode="numeric" value="84" autocomplete="off"></label>
+          </div>
+          <label class="field">m (módulo) <input id="nt-m" class="input mono" type="text" inputmode="numeric" value="1000007" autocomplete="off"></label>
+          <div class="keys keys-2" id="nt-ops">
+            <button class="k k-fn" type="button" data-op="1">mcd · mcm · Bézout (a, b)</button>
+            <button class="k k-fn" type="button" data-op="2">¿Primo? Factorizar a</button>
+            <button class="k k-fn" type="button" data-op="3">aᵇ mod m</button>
+            <button class="k k-fn" type="button" data-op="4">a⁻¹ mod m</button>
+          </div>
+          <p id="nt-msg" class="msg" role="alert"></p>
+          <div class="result-box" aria-live="polite"><dl id="nt-out" class="kv mono"></dl></div>
+        </div>
+
+        <div id="dsec-logic" class="dsec" hidden>
+          <label class="field">Expresión lógica
+            <input id="lg-expr" class="input mono" type="text" value="(p -> q) <-> (!q -> !p)" autocomplete="off" autocapitalize="off" spellcheck="false">
+          </label>
+          <div class="chips" id="lg-chips">
+            <button class="chip" type="button" data-ins="!">¬ no</button><button class="chip" type="button" data-ins=" & ">∧ y</button><button class="chip" type="button" data-ins=" | ">∨ o</button>
+            <button class="chip" type="button" data-ins=" ^ ">⊕ xor</button><button class="chip" type="button" data-ins=" -> ">→</button><button class="chip" type="button" data-ins=" <-> ">↔</button>
+          </div>
+          <div class="row wrap"><button id="lg-run" class="btn btn-primary" type="button">Tabla de verdad</button></div>
+          <p class="muted small">Variables: letras a–z (máx. 6) · constantes 0 y 1 · precedencia: ¬ &gt; ∧ &gt; ⊕ &gt; ∨ &gt; → &gt; ↔</p>
+          <p id="lg-msg" class="msg" role="alert"></p>
+          <div id="lg-summary" class="result-box" hidden></div>
+          <div class="table-wrap"><table id="lg-table" class="table" hidden></table></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== REDES ===================== -->
+    <section id="tab-network" class="panel" role="tabpanel" aria-labelledby="t-network" hidden>
+      <div class="card">
+        <h2 class="card-title">Redes IPv4 y subnetting</h2>
+        <div class="grid-2">
+          <label class="field">IP o IP/CIDR <input id="nw-ip" class="input mono" type="text" value="192.168.1.10/24" autocomplete="off" autocapitalize="off" spellcheck="false" inputmode="text"></label>
+          <label class="field">Máscara <span class="muted small">(opcional con /CIDR)</span> <input id="nw-mask" class="input mono" type="text" value="255.255.255.0" autocomplete="off" spellcheck="false" inputmode="text"></label>
+        </div>
+        <div class="row wrap">
+          <button id="nw-run" class="btn btn-primary" type="button">Analizar red</button>
+          <button id="nw-clear" class="btn btn-danger" type="button">Limpiar</button>
+        </div>
+        <p id="nw-msg" class="msg" role="alert"></p>
+        <div id="nw-result" class="result-box" hidden>
+          <dl id="nw-kv" class="kv mono"></dl>
+          <div class="bin-view" aria-label="Binario de la IP y la máscara">
+            <div class="muted small">IP binaria (<span class="legend-net">red</span> · <span class="legend-host">host</span>)</div>
+            <div id="nw-binip" class="mono bin-line"></div>
+            <div class="muted small">Máscara</div>
+            <div id="nw-binmask" class="mono bin-line"></div>
+          </div>
+        </div>
+
+        <details class="box" id="nw-split" hidden>
+          <summary>Dividir en subredes (VLSM)</summary>
+          <div class="grid-2">
+            <label class="field">Nuevo prefijo <input id="nw-newp" class="input mono" type="text" inputmode="numeric" value="26" autocomplete="off"></label>
+            <label class="field">…o hosts necesarios por subred <input id="nw-hosts" class="input mono" type="text" inputmode="numeric" placeholder="Ej: 50" autocomplete="off"></label>
+          </div>
+          <div class="row wrap"><button id="nw-div" class="btn" type="button">Dividir</button><span id="nw-hint" class="muted small"></span></div>
+          <p id="nw-smsg" class="msg" role="alert"></p>
+          <div class="table-wrap"><table id="nw-table" class="table mono" hidden></table></div>
+          <button id="nw-more" class="btn btn-sm" type="button" hidden>Mostrar más</button>
+        </details>
+      </div>
+    </section>
+  
+    <!-- ===================== CONJUNTOS (Venn) ===================== -->
+    <section id="tab-sets" class="panel" role="tabpanel" aria-labelledby="t-sets" hidden>
+      <div class="card">
+        <h2 class="card-title">Teoría de conjuntos</h2>
+        <label class="field">Ejemplos
+          <select id="st-example" aria-label="Cargar un ejemplo"></select>
+        </label>
+        <label class="field">Conjuntos (uno por línea). La letra U es el universo
+          <textarea id="st-sets" class="input mono" rows="4" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="A = {1, 2, 3, 4}&#10;B = {3, 4, 5, 6}"></textarea>
+        </label>
+        <div class="muted small">Elementos separados por coma · rangos <span class="mono">1..10</span> · vacío <span class="mono">{}</span> o ∅</div>
+        <div class="chips" id="st-ops" role="group" aria-label="Operaciones rápidas">
+          <button class="chip" type="button" data-op="un">Unión</button>
+          <button class="chip" type="button" data-op="in">Intersección</button>
+          <button class="chip" type="button" data-op="df">A − B</button>
+          <button class="chip" type="button" data-op="df2">B − A</button>
+          <button class="chip" type="button" data-op="sd">Dif. simétrica</button>
+          <button class="chip" type="button" data-op="cp">Complemento</button>
+        </div>
+        <label class="field">Operación (puedes combinar con paréntesis)
+          <input id="st-expr" class="input mono" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="(A − C) ∩ (A − B)">
+        </label>
+        <div class="chips" id="st-chips" role="group" aria-label="Símbolos">
+          <button class="chip" type="button" data-ins=" ∪ ">∪</button><button class="chip" type="button" data-ins=" ∩ ">∩</button>
+          <button class="chip" type="button" data-ins=" − ">−</button><button class="chip" type="button" data-ins=" Δ ">Δ</button>
+          <button class="chip" type="button" data-ins="′">′</button><button class="chip" type="button" data-ins="(">(</button><button class="chip" type="button" data-ins=")">)</button>
+          <button class="chip" type="button" data-ins="A">A</button><button class="chip" type="button" data-ins="B">B</button><button class="chip" type="button" data-ins="C">C</button><button class="chip" type="button" data-ins="U">U</button>
+        </div>
+        <div class="row wrap">
+          <button id="st-run" class="btn btn-primary" type="button">Calcular</button>
+          <button id="st-copy" class="btn" type="button">Copiar</button>
+          <button id="st-png" class="btn" type="button">PNG</button>
+        </div>
+        <p class="muted small">Símbolos aceptados: ∪ | + (unión) · ∩ &amp; * (intersección) · − \ (diferencia) · Δ ^ (simétrica) · ′ ' ^c ! (complemento). Precedencia: ′ &gt; ∩ &gt; ∪ − Δ.</p>
+        <p id="st-msg" class="msg" role="alert"></p>
+        <div class="result-box center">
+          <div class="muted small" id="st-label">Resultado</div>
+          <div id="st-result" class="big-result big-wrap" aria-live="polite">—</div>
+          <div id="st-detail" class="muted small"></div>
+        </div>
+        <div class="canvas-wrap"><canvas id="st-venn" class="venn-canvas" role="img" aria-label="Diagrama de Venn"></canvas></div>
+        <p id="st-vnote" class="muted small"></p>
+        <div id="steps-sets" class="steps steps-wrap" hidden></div>
+      </div>
+    </section>
+
+    <!-- ===================== POLINOMIOS ===================== -->
+    <section id="tab-poly" class="panel" role="tabpanel" aria-labelledby="t-poly" hidden>
+      <div class="card">
+        <h2 class="card-title">Polinomios y productos notables</h2>
+        <label class="field">Ejemplos
+          <select id="pl-example" aria-label="Cargar un ejemplo"></select>
+        </label>
+        <label class="field">Expresión
+          <input id="pl-expr" class="input mono" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="(x+3)^2">
+        </label>
+        <div class="chips" id="pl-chips" role="group" aria-label="Símbolos">
+          <button class="chip" type="button" data-ins="x">x</button><button class="chip" type="button" data-ins="y">y</button>
+          <button class="chip" type="button" data-ins="^">^</button><button class="chip" type="button" data-ins="(">(</button><button class="chip" type="button" data-ins=")">)</button>
+          <button class="chip" type="button" data-ins="+">+</button><button class="chip" type="button" data-ins="-">−</button>
+          <button class="chip" type="button" data-ins="*">×</button><button class="chip" type="button" data-ins="/">÷</button>
+        </div>
+        <div class="row wrap">
+          <button id="pl-run" class="btn btn-primary" type="button">Desarrollar</button>
+          <button id="pl-copy" class="btn" type="button" hidden>Copiar</button>
+        </div>
+        <p class="muted small">Escribe como en clase: <span class="mono">3x^2</span>, <span class="mono">(x+2)(x-5)</span>, <span class="mono">(8x^4-6x^3)/(2x^2)</span>. Suma, resta, ×, ÷ y potencias enteras. Coeficientes fraccionarios exactos (p. ej. <span class="mono">(1/2)x</span>).</p>
+        <p id="pl-msg" class="msg" role="alert"></p>
+        <div class="result-box">
+          <div class="muted small">Resultado simplificado</div>
+          <div id="pl-result" class="big-result big-wrap" aria-live="polite">—</div>
+          <dl id="pl-kv" class="kv mono"></dl>
+        </div>
+        <p id="pl-check" class="msg"></p>
+        <div id="steps-poly" class="steps steps-wrap" hidden></div>
+        <details class="box">
+          <summary>Fórmulas de productos notables</summary>
+          <dl class="kv mono">
+            <div><dt>Cuadrado de la suma</dt><dd>(a+b)² = a² + 2ab + b²</dd></div>
+            <div><dt>Cuadrado de la diferencia</dt><dd>(a−b)² = a² − 2ab + b²</dd></div>
+            <div><dt>Suma por diferencia</dt><dd>(a+b)(a−b) = a² − b²</dd></div>
+            <div><dt>Cubo de la suma</dt><dd>(a+b)³ = a³ + 3a²b + 3ab² + b³</dd></div>
+            <div><dt>Cubo de la diferencia</dt><dd>(a−b)³ = a³ − 3a²b + 3ab² − b³</dd></div>
+            <div><dt>Término común</dt><dd>(x+a)(x+b) = x² + (a+b)x + ab</dd></div>
+          </dl>
+        </details>
+      </div>
+    </section>
+
+    <!-- ===================== PROPORCIÓN ===================== -->
+    <section id="tab-ratio" class="panel" role="tabpanel" aria-labelledby="t-ratio" hidden>
+      <div class="card">
+        <h2 class="card-title">Proporcionalidad</h2>
+        <div class="segmented" role="tablist" aria-label="Sección">
+          <button type="button" class="seg active" data-rsec="rt" role="tab" aria-selected="true">Regla de tres</button>
+          <button type="button" class="seg" data-rsec="pc" role="tab" aria-selected="false">Porcentajes</button>
+        </div>
+
+        <div id="rsec-rt" class="dsec">
+          <div class="chips" id="rt-types" role="group" aria-label="Tipo de regla de tres">
+            <button class="chip" type="button" data-rt="directa" aria-pressed="true">Simple directa</button>
+            <button class="chip" type="button" data-rt="inversa" aria-pressed="false">Simple inversa</button>
+            <button class="chip" type="button" data-rt="compuesta" aria-pressed="false">Compuesta</button>
+          </div>
+
+          <div id="rt-simple" class="dsec">
+            <div class="grid-2">
+              <label class="field">Magnitud 1 <input id="rt-l1" class="input" type="text" autocomplete="off" value="Sacos de cemento"></label>
+              <label class="field">Magnitud 2 <input id="rt-l2" class="input" type="text" autocomplete="off" value="Área (m²)"></label>
+            </div>
+            <div class="rt-grid">
+              <input id="rt-c0" class="input mono" type="text" inputmode="decimal" autocomplete="off" aria-label="Fila 1, columna 1"><span class="arrow" aria-hidden="true">→</span>
+              <input id="rt-c1" class="input mono" type="text" inputmode="decimal" autocomplete="off" aria-label="Fila 1, columna 2">
+              <input id="rt-c2" class="input mono" type="text" inputmode="decimal" autocomplete="off" aria-label="Fila 2, columna 1"><span class="arrow" aria-hidden="true">→</span>
+              <input id="rt-c3" class="input mono" type="text" inputmode="decimal" autocomplete="off" aria-label="Fila 2, columna 2">
+            </div>
+            <div class="muted small">Deja <b>vacía</b> la casilla de la incógnita x (puede estar en cualquiera).</div>
+            <div class="row"><button id="rt-example-simple" class="link-btn" type="button">Cargar ejemplo de la guía</button></div>
+          </div>
+
+          <div id="rt-comp" class="dsec" hidden>
+            <div class="muted small">Cada magnitud: valor en la situación 1 y en la 2, y si es directa o inversa respecto a la incógnita. La incógnita lleva su valor de la situación 1.</div>
+            <div id="rt-rows" class="rt-rows"></div>
+            <div class="row"><button id="rt-add" class="btn btn-sm" type="button">+ Magnitud</button></div>
+          </div>
+
+          <div class="row wrap"><button id="rt-run" class="btn btn-primary" type="button">Calcular</button></div>
+          <p id="rt-msg" class="msg" role="alert"></p>
+          <div class="result-box center">
+            <div class="muted small" id="rt-label">Resultado</div>
+            <div id="rt-result" class="big-result big-wrap" aria-live="polite">—</div>
+          </div>
+          <div id="steps-rt" class="steps steps-wrap" hidden></div>
+        </div>
+
+        <div id="rsec-pc" class="dsec" hidden>
+          <label class="field">Operación <select id="pc-mode"></select></label>
+          <div class="grid-2">
+            <label class="field"><span id="pc-la">Valor 1</span><input id="pc-a" class="input mono" type="text" inputmode="decimal" autocomplete="off"></label>
+            <label class="field"><span id="pc-lb">Valor 2</span><input id="pc-b" class="input mono" type="text" inputmode="decimal" autocomplete="off"></label>
+          </div>
+          <div class="row wrap"><button id="pc-run" class="btn btn-primary" type="button">Calcular</button></div>
+          <p id="pc-msg" class="msg" role="alert"></p>
+          <div class="result-box center">
+            <div class="muted small" id="pc-label">Resultado</div>
+            <div id="pc-result" class="big-result big-wrap" aria-live="polite">—</div>
+            <dl id="pc-kv" class="kv mono"></dl>
+          </div>
+          <div id="steps-pc" class="steps steps-wrap" hidden></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Ajustes -->
+  <dialog id="dlg-settings" class="dialog" aria-labelledby="dlg-title">
+    <form method="dialog" class="dialog-body">
+      <h2 id="dlg-title" class="card-title">Ajustes</h2>
+      <label class="field">Tema
+        <select id="set-theme"><option value="auto">Automático (sistema)</option><option value="dark">Oscuro</option><option value="light">Claro</option></select>
+      </label>
+      <label class="field">Precisión de resultados
+        <select id="set-prec"><option value="6">6 cifras</option><option value="10">10 cifras</option><option value="12">12 cifras</option><option value="15">15 cifras (recomendado)</option><option value="17">17 cifras (máxima, muestra el error binario)</option></select>
+      </label>
+      <label class="field">Unidad angular
+        <select id="set-angle"><option value="rad">Radianes</option><option value="deg">Grados</option><option value="grad">Gradianes</option></select>
+      </label>
+      <div class="row wrap">
+        <button type="button" class="btn" id="btn-install" hidden>Instalar aplicación</button>
+        <button type="button" class="btn btn-danger" id="btn-reset-all">Borrar datos guardados</button>
+      </div>
+      <p class="muted small" id="about-line"></p>
+      <div class="row end"><button class="btn btn-primary" value="close">Cerrar</button></div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+</body>
+</html>

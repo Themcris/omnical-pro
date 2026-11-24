@@ -1,0 +1,153 @@
+
+    <!-- ===================== CONJUNTOS (Venn) ===================== -->
+    <section id="tab-sets" class="panel" role="tabpanel" aria-labelledby="t-sets" hidden>
+      <div class="card">
+        <h2 class="card-title">Teoría de conjuntos</h2>
+        <label class="field">Ejemplos
+          <select id="st-example" aria-label="Cargar un ejemplo"></select>
+        </label>
+        <label class="field">Conjuntos (uno por línea). La letra U es el universo
+          <textarea id="st-sets" class="input mono" rows="4" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="A = {1, 2, 3, 4}&#10;B = {3, 4, 5, 6}"></textarea>
+        </label>
+        <div class="muted small">Elementos separados por coma · rangos <span class="mono">1..10</span> · vacío <span class="mono">{}</span> o ∅</div>
+        <div class="chips" id="st-ops" role="group" aria-label="Operaciones rápidas">
+          <button class="chip" type="button" data-op="un">Unión</button>
+          <button class="chip" type="button" data-op="in">Intersección</button>
+          <button class="chip" type="button" data-op="df">A − B</button>
+          <button class="chip" type="button" data-op="df2">B − A</button>
+          <button class="chip" type="button" data-op="sd">Dif. simétrica</button>
+          <button class="chip" type="button" data-op="cp">Complemento</button>
+        </div>
+        <label class="field">Operación (puedes combinar con paréntesis)
+          <input id="st-expr" class="input mono" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="(A − C) ∩ (A − B)">
+        </label>
+        <div class="chips" id="st-chips" role="group" aria-label="Símbolos">
+          <button class="chip" type="button" data-ins=" ∪ ">∪</button><button class="chip" type="button" data-ins=" ∩ ">∩</button>
+          <button class="chip" type="button" data-ins=" − ">−</button><button class="chip" type="button" data-ins=" Δ ">Δ</button>
+          <button class="chip" type="button" data-ins="′">′</button><button class="chip" type="button" data-ins="(">(</button><button class="chip" type="button" data-ins=")">)</button>
+          <button class="chip" type="button" data-ins="A">A</button><button class="chip" type="button" data-ins="B">B</button><button class="chip" type="button" data-ins="C">C</button><button class="chip" type="button" data-ins="U">U</button>
+        </div>
+        <div class="row wrap">
+          <button id="st-run" class="btn btn-primary" type="button">Calcular</button>
+          <button id="st-copy" class="btn" type="button">Copiar</button>
+          <button id="st-png" class="btn" type="button">PNG</button>
+        </div>
+        <p class="muted small">Símbolos aceptados: ∪ | + (unión) · ∩ &amp; * (intersección) · − \ (diferencia) · Δ ^ (simétrica) · ′ ' ^c ! (complemento). Precedencia: ′ &gt; ∩ &gt; ∪ − Δ.</p>
+        <p id="st-msg" class="msg" role="alert"></p>
+        <div class="result-box center">
+          <div class="muted small" id="st-label">Resultado</div>
+          <div id="st-result" class="big-result big-wrap" aria-live="polite">—</div>
+          <div id="st-detail" class="muted small"></div>
+        </div>
+        <div class="canvas-wrap"><canvas id="st-venn" class="venn-canvas" role="img" aria-label="Diagrama de Venn"></canvas></div>
+        <p id="st-vnote" class="muted small"></p>
+        <div id="steps-sets" class="steps steps-wrap" hidden></div>
+      </div>
+    </section>
+
+    <!-- ===================== POLINOMIOS ===================== -->
+    <section id="tab-poly" class="panel" role="tabpanel" aria-labelledby="t-poly" hidden>
+      <div class="card">
+        <h2 class="card-title">Polinomios y productos notables</h2>
+        <label class="field">Ejemplos
+          <select id="pl-example" aria-label="Cargar un ejemplo"></select>
+        </label>
+        <label class="field">Expresión
+          <input id="pl-expr" class="input mono" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="(x+3)^2">
+        </label>
+        <div class="chips" id="pl-chips" role="group" aria-label="Símbolos">
+          <button class="chip" type="button" data-ins="x">x</button><button class="chip" type="button" data-ins="y">y</button>
+          <button class="chip" type="button" data-ins="^">^</button><button class="chip" type="button" data-ins="(">(</button><button class="chip" type="button" data-ins=")">)</button>
+          <button class="chip" type="button" data-ins="+">+</button><button class="chip" type="button" data-ins="-">−</button>
+          <button class="chip" type="button" data-ins="*">×</button><button class="chip" type="button" data-ins="/">÷</button>
+        </div>
+        <div class="row wrap">
+          <button id="pl-run" class="btn btn-primary" type="button">Desarrollar</button>
+          <button id="pl-copy" class="btn" type="button" hidden>Copiar</button>
+        </div>
+        <p class="muted small">Escribe como en clase: <span class="mono">3x^2</span>, <span class="mono">(x+2)(x-5)</span>, <span class="mono">(8x^4-6x^3)/(2x^2)</span>. Suma, resta, ×, ÷ y potencias enteras. Coeficientes fraccionarios exactos (p. ej. <span class="mono">(1/2)x</span>).</p>
+        <p id="pl-msg" class="msg" role="alert"></p>
+        <div class="result-box">
+          <div class="muted small">Resultado simplificado</div>
+          <div id="pl-result" class="big-result big-wrap" aria-live="polite">—</div>
+          <dl id="pl-kv" class="kv mono"></dl>
+        </div>
+        <p id="pl-check" class="msg"></p>
+        <div id="steps-poly" class="steps steps-wrap" hidden></div>
+        <details class="box">
+          <summary>Fórmulas de productos notables</summary>
+          <dl class="kv mono">
+            <div><dt>Cuadrado de la suma</dt><dd>(a+b)² = a² + 2ab + b²</dd></div>
+            <div><dt>Cuadrado de la diferencia</dt><dd>(a−b)² = a² − 2ab + b²</dd></div>
+            <div><dt>Suma por diferencia</dt><dd>(a+b)(a−b) = a² − b²</dd></div>
+            <div><dt>Cubo de la suma</dt><dd>(a+b)³ = a³ + 3a²b + 3ab² + b³</dd></div>
+            <div><dt>Cubo de la diferencia</dt><dd>(a−b)³ = a³ − 3a²b + 3ab² − b³</dd></div>
+            <div><dt>Término común</dt><dd>(x+a)(x+b) = x² + (a+b)x + ab</dd></div>
+          </dl>
+        </details>
+      </div>
+    </section>
+
+    <!-- ===================== PROPORCIÓN ===================== -->
+    <section id="tab-ratio" class="panel" role="tabpanel" aria-labelledby="t-ratio" hidden>
+      <div class="card">
+        <h2 class="card-title">Proporcionalidad</h2>
+        <div class="segmented" role="tablist" aria-label="Sección">
+          <button type="button" class="seg active" data-rsec="rt" role="tab" aria-selected="true">Regla de tres</button>
+          <button type="button" class="seg" data-rsec="pc" role="tab" aria-selected="false">Porcentajes</button>
+        </div>
+
+        <div id="rsec-rt" class="dsec">
+          <div class="chips" id="rt-types" role="group" aria-label="Tipo de regla de tres">
+            <button class="chip" type="button" data-rt="directa" aria-pressed="true">Simple directa</button>
+            <button class="chip" type="button" data-rt="inversa" aria-pressed="false">Simple inversa</button>
+            <button class="chip" type="button" data-rt="compuesta" aria-pressed="false">Compuesta</button>
+          </div>
+
+          <div id="rt-simple" class="dsec">
+            <div class="grid-2">
+              <label class="field">Magnitud 1 <input id="rt-l1" class="input" type="text" autocomplete="off" value="Sacos de cemento"></label>
+              <label class="field">Magnitud 2 <input id="rt-l2" class="input" type="text" autocomplete="off" value="Área (m²)"></label>
+            </div>
+            <div class="rt-grid">
+              <input id="rt-c0" class="input mono" type="text" inputmode="decimal" autocomplete="off" aria-label="Fila 1, columna 1"><span class="arrow" aria-hidden="true">→</span>
+              <input id="rt-c1" class="input mono" type="text" inputmode="decimal" autocomplete="off" aria-label="Fila 1, columna 2">
+              <input id="rt-c2" class="input mono" type="text" inputmode="decimal" autocomplete="off" aria-label="Fila 2, columna 1"><span class="arrow" aria-hidden="true">→</span>
+              <input id="rt-c3" class="input mono" type="text" inputmode="decimal" autocomplete="off" aria-label="Fila 2, columna 2">
+            </div>
+            <div class="muted small">Deja <b>vacía</b> la casilla de la incógnita x (puede estar en cualquiera).</div>
+            <div class="row"><button id="rt-example-simple" class="link-btn" type="button">Cargar ejemplo de la guía</button></div>
+          </div>
+
+          <div id="rt-comp" class="dsec" hidden>
+            <div class="muted small">Cada magnitud: valor en la situación 1 y en la 2, y si es directa o inversa respecto a la incógnita. La incógnita lleva su valor de la situación 1.</div>
+            <div id="rt-rows" class="rt-rows"></div>
+            <div class="row"><button id="rt-add" class="btn btn-sm" type="button">+ Magnitud</button></div>
+          </div>
+
+          <div class="row wrap"><button id="rt-run" class="btn btn-primary" type="button">Calcular</button></div>
+          <p id="rt-msg" class="msg" role="alert"></p>
+          <div class="result-box center">
+            <div class="muted small" id="rt-label">Resultado</div>
+            <div id="rt-result" class="big-result big-wrap" aria-live="polite">—</div>
+          </div>
+          <div id="steps-rt" class="steps steps-wrap" hidden></div>
+        </div>
+
+        <div id="rsec-pc" class="dsec" hidden>
+          <label class="field">Operación <select id="pc-mode"></select></label>
+          <div class="grid-2">
+            <label class="field"><span id="pc-la">Valor 1</span><input id="pc-a" class="input mono" type="text" inputmode="decimal" autocomplete="off"></label>
+            <label class="field"><span id="pc-lb">Valor 2</span><input id="pc-b" class="input mono" type="text" inputmode="decimal" autocomplete="off"></label>
+          </div>
+          <div class="row wrap"><button id="pc-run" class="btn btn-primary" type="button">Calcular</button></div>
+          <p id="pc-msg" class="msg" role="alert"></p>
+          <div class="result-box center">
+            <div class="muted small" id="pc-label">Resultado</div>
+            <div id="pc-result" class="big-result big-wrap" aria-live="polite">—</div>
+            <dl id="pc-kv" class="kv mono"></dl>
+          </div>
+          <div id="steps-pc" class="steps steps-wrap" hidden></div>
+        </div>
+      </div>
+    </section>
